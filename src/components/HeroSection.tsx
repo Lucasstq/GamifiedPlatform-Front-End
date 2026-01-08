@@ -3,6 +3,7 @@
 import { ArrowDown, Sparkles, Github } from "lucide-react";
 import { Button } from "./ui/button";
 import wizardImage from "@/assets/wizard.png";
+import Link from "next/link";
 
 const HeroSection = () => {
   return (
@@ -71,9 +72,12 @@ const HeroSection = () => {
                 }}
                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#aa00aa'}
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#ff00ff'}
+                asChild
               >
-                <Sparkles className="w-4 h-4 mr-2" />
-                Começar Aventura
+                <Link href="/cadastro">
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Começar Aventura
+                </Link>
               </Button>
               <Button
                 size="lg"

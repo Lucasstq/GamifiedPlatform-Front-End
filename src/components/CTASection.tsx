@@ -2,6 +2,7 @@
 
 import { Sparkles, Github, ExternalLink } from "lucide-react";
 import { Button } from "./ui/button";
+import Link from "next/link";
 
 const CTASection = () => {
   return (
@@ -38,10 +39,8 @@ const CTASection = () => {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a
-                href="https://github.com/Lucasstq/GamifiedPlatform"
-                target="_blank"
-                rel="noopener noreferrer"
+              <Link
+                href="/entrar"
                 className="inline-flex items-center justify-center whitespace-nowrap rounded-md font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 font-pixel text-xs px-8 py-6 h-auto transition-all duration-300 hover:scale-105"
                 style={{ 
                   backgroundColor: '#ff00ff',
@@ -51,6 +50,20 @@ const CTASection = () => {
                 }}
                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#aa00aa'}
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#ff00ff'}
+              >
+                <Sparkles className="w-5 h-5 mr-2" />
+                Iniciar Jornada
+              </Link>
+              <a
+                href="https://github.com/Lucasstq/GamifiedPlatform"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center whitespace-nowrap rounded-md font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border-2 bg-transparent shadow hover:bg-card/50 font-pixel text-xs px-8 py-6 h-auto transition-all duration-300 hover:scale-105"
+                style={{ 
+                  borderColor: '#00ff88',
+                  color: '#00ff88',
+                  boxShadow: '0 0 15px rgba(0, 255, 136, 0.3)'
+                }}
               >
                 <Github className="w-5 h-5 mr-2" />
                 Ver Repositório
