@@ -18,7 +18,7 @@ const Footer = () => {
 
           {/* Center text - Absolutely positioned to be truly centered */}
           <div className="md:absolute md:left-1/2 md:-translate-x-1/2 flex items-center gap-2 text-sm text-muted-foreground">
-            <span>Feito por</span>
+            <span>Desenvolvido por</span>
             <a
               href="https://www.linkedin.com/in/lucas-torquato-dev"
               target="_blank"

@@ -52,7 +52,7 @@ const CTASection = () => {
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#ff00ff'}
               >
                 <Sparkles className="w-5 h-5 mr-2" />
-                Iniciar Jornada
+                Começar Aventura
               </Link>
               <a
                 href="https://github.com/Lucasstq/GamifiedPlatform"
@@ -66,7 +66,7 @@ const CTASection = () => {
                 }}
               >
                 <Github className="w-5 h-5 mr-2" />
-                Ver Repositório
+                Ver no GitHub
               </a>
             </div>
 

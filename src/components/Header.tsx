@@ -2,9 +2,11 @@
 
 import { Sword, Menu, X } from "lucide-react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
 
 const Navbar = () => {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
 
   const navLinks = [
@@ -47,7 +49,8 @@ const Navbar = () => {
           {/* CTA Button */}
           <div className="hidden md:block">
             <Button 
-              className="bg-primary hover:bg-primary/80 text-primary-foreground font-pixel text-xs px-6 py-2.5 transition-all duration-300"
+              onClick={() => router.push('/entrar')}
+              className="bg-primary hover:bg-primary/80 text-primary-foreground font-pixel text-xs px-6 py-2.5 transition-all duration-300 cursor-pointer"
               style={{ 
                 backgroundColor: '#ff00ff',
                 border: 'none',
@@ -57,7 +60,7 @@ const Navbar = () => {
               onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#aa00aa'}
               onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#ff00ff'}
             >
-              Iniciar Jornada
+              Fazer Login
             </Button>
           </div>
 
@@ -85,8 +88,8 @@ const Navbar = () => {
                 </a>
               ))}
               <Button 
-                className="bg-primary hover:bg-primary/80 text-primary-foreground font-pixel text-xs w-full mt-2 transition-all duration-300" 
-                onClick={() => setIsOpen(false)}
+                className="bg-primary hover:bg-primary/80 text-primary-foreground font-pixel text-xs w-full mt-2 transition-all duration-300 cursor-pointer" 
+                onClick={() => { setIsOpen(false); router.push('/entrar'); }}
                 style={{ 
                   backgroundColor: '#ff00ff',
                   border: 'none',
@@ -96,7 +99,7 @@ const Navbar = () => {
                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#aa00aa'}
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#ff00ff'}
               >
-                Iniciar Jornada
+                Fazer Login
               </Button>
             </div>
           </div>
