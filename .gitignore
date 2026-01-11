@@ -118,3 +118,10 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/windows,macos,linux
+
+# Documentation files
+API_POSTMAN_COLLECTION.json
+FRONT_END_INTEGRATION_GUIDE.md
+FRONT_END_README.md
+SETUP.md
+VISUAL_OVERVIEW.md
