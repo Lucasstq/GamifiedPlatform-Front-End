@@ -38,11 +38,6 @@ export default function CadastroPage() {
       return;
     }
 
-    if (formData.password.length < 6) {
-      setError('A senha deve ter no mínimo 6 caracteres');
-      return;
-    }
-
     setIsLoading(true);
 
     try {
