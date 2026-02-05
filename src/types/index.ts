@@ -1,14 +1,22 @@
 // User types
+export type AuthProvider = 'LOCAL' | 'GOOGLE' | 'GITHUB' | 'local' | 'google' | 'github';
+
 export interface User {
   id: number;
   username: string;
   email: string;
   role: 'USER' | 'ADMIN';
   avatarUrl?: string;
+  avatar_url?: string; // snake_case do backend
+  authProvider?: AuthProvider;
+  auth_provider?: AuthProvider; // snake_case do backend
   active: boolean;
   emailVerified: boolean;
+  email_verified?: boolean; // snake_case do backend
   createdAt: string;
+  created_at?: string; // snake_case do backend
   updatedAt: string;
+  updated_at?: string; // snake_case do backend
 }
 
 export interface UserProfile extends User {
@@ -18,6 +26,16 @@ export interface UserProfile extends User {
   defeatedBosses: number;
   earnedBadges: number;
   rankingPosition?: number;
+}
+
+export interface UserDashboard {
+  username: string;
+  avatar_url: string | null;
+  current_level: number;
+  current_xp: number;
+  next_level_xp: number;
+  ranking_position: number;
+  total_quests: number;
 }
 
 // Auth types
@@ -169,15 +187,18 @@ export interface Notification {
   createdAt: string;
 }
 
-// Ranking types
+// Ranking types (snake_case para corresponder ao backend)
 export interface RankingEntry {
   position: number;
-  userId: number;
+  user_id: number;
   username: string;
-  avatarUrl?: string;
-  totalXp: number;
-  currentLevel: number;
-  levelTitle: string;
+  avatar_url?: string;
+  character_name: string;
+  level: number;
+  xp: number;
+  level_name: string;
+  level_title: string;
+  is_me: boolean;
 }
 
 // Pagination types

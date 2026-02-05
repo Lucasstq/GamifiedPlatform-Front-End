@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import apiService from '@/services/api.service';
+import { UserDashboard, RankingEntry } from '@/types';
 import { 
   Sword, 
   LogOut, 
@@ -10,7 +12,6 @@ import {
   Zap, 
   Trophy, 
   Target, 
-  Flame,
   Settings,
   Book,
   Star,
@@ -19,16 +20,57 @@ import {
   Clock
 } from 'lucide-react';
 
+// Cores para as posições do ranking
+const rankingColors = ['#ffc61a', '#c0c0c0', '#cd7f32', '#a855f7', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
+
 export default function DashboardPage() {
   const router = useRouter();
   const { user, isAuthenticated, isLoading, logout } = useAuth();
-  const [currentLevel] = useState(12);
-  const [currentXP] = useState(2450);
-  const [nextLevelXP] = useState(3000);
-  const [totalXP] = useState(15420);
-  const [streak] = useState(7);
-  const [rankingPosition] = useState(442);
-  const [totalQuests] = useState(23);
+  const [dashboardData, setDashboardData] = useState<UserDashboard | null>(null);
+  const [globalRanking, setGlobalRanking] = useState<RankingEntry[]>([]);
+  const [isLoadingDashboard, setIsLoadingDashboard] = useState(true);
+  const [isLoadingRanking, setIsLoadingRanking] = useState(true);
+
+  // Carregar dados do dashboard
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      if (!isAuthenticated) return;
+      
+      try {
+        const response = await apiService.get<UserDashboard>('/users/me/dashboard');
+        setDashboardData(response.data);
+      } catch (error) {
+        console.error('Erro ao carregar dashboard:', error);
+      } finally {
+        setIsLoadingDashboard(false);
+      }
+    };
+
+    if (!isLoading && isAuthenticated) {
+      fetchDashboard();
+    }
+  }, [isAuthenticated, isLoading]);
+
+  // Carregar ranking separadamente (pode falhar sem quebrar o dashboard)
+  useEffect(() => {
+    const fetchRanking = async () => {
+      if (!isAuthenticated) return;
+      
+      try {
+        const response = await apiService.get<{ content: RankingEntry[] }>('/ranking?page=0&size=5');
+        setGlobalRanking(response.data.content || []);
+      } catch (error) {
+        console.error('Erro ao carregar ranking:', error);
+        // Ranking pode falhar por falta de permissão, não quebra o dashboard
+      } finally {
+        setIsLoadingRanking(false);
+      }
+    };
+
+    if (!isLoading && isAuthenticated) {
+      fetchRanking();
+    }
+  }, [isAuthenticated, isLoading]);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -55,7 +97,15 @@ export default function DashboardPage() {
     return null;
   }
 
-  const xpPercentage = (currentXP / nextLevelXP) * 100;
+  // Dados do dashboard (com fallback para valores padrão)
+  const currentLevel = dashboardData?.current_level ?? 1;
+  const currentXP = dashboardData?.current_xp ?? 0;
+  const nextLevelXP = dashboardData?.next_level_xp ?? 100;
+  const rankingPosition = dashboardData?.ranking_position ?? 0;
+  const totalQuests = dashboardData?.total_quests ?? 0;
+  const username = dashboardData?.username ?? user.username;
+  
+  const xpPercentage = nextLevelXP > 0 ? (currentXP / nextLevelXP) * 100 : 0;
 
   // Missões Diárias
   const dailyMissions = [
@@ -88,14 +138,7 @@ export default function DashboardPage() {
     },
   ];
 
-  // Ranking Semanal
-  const weeklyRanking = [
-    { position: 1, name: 'DragonSlayer', xp: 45200, color: '#ff6b9d' },
-    { position: 2, name: 'CodeWizard', xp: 42100, color: '#ffa500' },
-    { position: 3, name: 'PixelKnight', xp: 38900, color: '#9b59b6' },
-    { position: 4, name: 'ShadowCoder', xp: 35600, color: '#e74c3c' },
-    { position: 5, name: 'MysticDev', xp: 32400, color: '#3498db' },
-  ];
+
 
   return (
     <div className="min-h-screen" style={{ background: '#0a0118' }}>
@@ -113,36 +156,48 @@ export default function DashboardPage() {
 
             {/* Right Section */}
             <div className="flex items-center gap-2 sm:gap-4">
-              {/* Streak */}
+              {/* Ranking Position */}
               <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ backgroundColor: '#1a0f2e' }}>
-                <Flame className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: '#ff6b4a', imageRendering: 'pixelated' }} />
-                <span className="font-pixel font-bold text-sm sm:text-base" style={{ color: '#ff6b4a' }}>{streak}</span>
+                <Trophy className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: '#ffc61a', imageRendering: 'pixelated' }} />
+                <span className="font-pixel font-bold text-sm sm:text-base" style={{ color: '#ffc61a' }}>#{rankingPosition}</span>
               </div>
 
-              {/* Total XP */}
+              {/* Current XP */}
               <div className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg" style={{ backgroundColor: '#1a0f2e' }}>
-                <Star className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: '#ffc61a', imageRendering: 'pixelated' }} />
-                <span className="font-pixel font-bold text-sm sm:text-base" style={{ color: '#ffc61a' }}>
-                  {totalXP.toLocaleString()} XP
+                <Star className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: '#00ff88', imageRendering: 'pixelated' }} />
+                <span className="font-pixel font-bold text-sm sm:text-base" style={{ color: '#00ff88' }}>
+                  {currentXP.toLocaleString()} XP
                 </span>
               </div>
 
               {/* User Avatar */}
               <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ backgroundColor: '#1a0f2e' }}>
-                <div className="w-8 h-8 rounded-sm flex items-center justify-center" style={{ 
-                  background: 'linear-gradient(135deg, #ff00ff 0%, #00ff88 100%)',
-                  imageRendering: 'pixelated'
-                }}>
-                  <span className="text-white font-pixel font-bold text-xs">A</span>
-                </div>
+                {dashboardData?.avatar_url ? (
+                  <img 
+                    src={dashboardData.avatar_url} 
+                    alt={username}
+                    className="w-8 h-8 rounded-sm object-cover"
+                    style={{ imageRendering: 'pixelated' }}
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-sm flex items-center justify-center" style={{ 
+                    background: 'linear-gradient(135deg, #ff00ff 0%, #00ff88 100%)',
+                    imageRendering: 'pixelated'
+                  }}>
+                    <span className="text-white font-pixel font-bold text-xs">{username.charAt(0).toUpperCase()}</span>
+                  </div>
+                )}
                 <div className="hidden md:block">
-                  <p className="text-xs font-pixel font-medium text-white">{user.username}</p>
+                  <p className="text-xs font-pixel font-medium text-white">{username}</p>
                   <p className="text-xs font-pixel" style={{ color: '#a855f7' }}>Nível {currentLevel}</p>
                 </div>
               </div>
 
               {/* Settings & Logout */}
-              <button className="p-2 rounded-lg hover:bg-white/5 transition-colors">
+              <button 
+                onClick={() => router.push('/configuracoes')}
+                className="p-2 rounded-lg hover:bg-white/5 transition-colors"
+              >
                 <Settings className="w-5 h-5 text-gray-400" style={{ imageRendering: 'pixelated' }} />
               </button>
               <button 
@@ -161,7 +216,7 @@ export default function DashboardPage() {
         {/* Welcome Section */}
         <div className="mb-8">
           <h2 className="font-pixel text-2xl sm:text-3xl md:text-4xl mb-2 text-white">
-            Bem-vindo de volta, <span style={{ color: '#ff00ff' }}>{user.username}</span>!
+            Bem-vindo de volta, <span style={{ color: '#ff00ff' }}>{username}</span>!
           </h2>
           <p className="text-gray-400 text-sm sm:text-base">
             Continue sua jornada e conquiste novos conhecimentos.
@@ -193,15 +248,15 @@ export default function DashboardPage() {
             <p className="text-xs text-gray-400">{currentXP}/{nextLevelXP} XP</p>
           </div>
 
-          {/* Streak Card */}
+          {/* XP Card */}
           <div className="p-4 sm:p-6 rounded-lg border" style={{ backgroundColor: '#1a0f2e', borderColor: '#2d1b4e' }}>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-sm flex items-center justify-center" style={{ backgroundColor: '#ff6b4a20' }}>
-                <Flame className="w-5 h-5" style={{ color: '#ff6b4a', imageRendering: 'pixelated' }} />
+              <div className="w-10 h-10 rounded-sm flex items-center justify-center" style={{ backgroundColor: '#00ff8820' }}>
+                <Zap className="w-5 h-5" style={{ color: '#00ff88', imageRendering: 'pixelated' }} />
               </div>
               <div>
-                <p className="font-pixel text-xs text-gray-400">Sequência</p>
-                <p className="font-pixel text-2xl font-bold text-white">{streak} dias</p>
+                <p className="font-pixel text-xs text-gray-400">XP Atual</p>
+                <p className="font-pixel text-2xl font-bold text-white">{currentXP.toLocaleString()}</p>
               </div>
             </div>
           </div>
@@ -306,34 +361,56 @@ export default function DashboardPage() {
 
           {/* Right Column - Ranking & Achievements */}
           <div className="space-y-6">
-            {/* Weekly Ranking */}
+            {/* Global Ranking */}
             <div className="p-6 rounded-xl border" style={{ backgroundColor: '#1a0f2e', borderColor: '#2d1b4e' }}>
               <div className="flex items-center gap-3 mb-6">
                 <Trophy className="w-6 h-6" style={{ color: '#ffc61a' }} />
-                <h3 className="font-pixel text-xl text-white">Ranking Semanal</h3>
+                <h3 className="font-pixel text-xl text-white">Ranking Global</h3>
               </div>
 
               <div className="space-y-3">
-                {weeklyRanking.map((player, index) => (
-                  <div 
-                    key={player.position} 
-                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors"
-                    style={{
-                      borderBottom: index < weeklyRanking.length - 1 ? '1px solid rgba(255, 255, 255, 0.1)' : 'none'
-                    }}
-                  >
-                    <span className="text-xl font-bold w-6" style={{ color: player.color }}>
-                      {player.position}
-                    </span>
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: player.color }}>
-                      <span className="text-white font-bold text-xs">{player.name[0]}</span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-white truncate">{player.name}</p>
-                      <p className="text-xs text-gray-400">{player.xp.toLocaleString()} XP</p>
-                    </div>
+                {isLoadingRanking ? (
+                  <div className="text-center py-4 text-gray-400">
+                    <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                    <p className="text-sm">Carregando ranking...</p>
                   </div>
-                ))}
+                ) : globalRanking.length > 0 ? (
+                  globalRanking.map((player, index) => (
+                    <div 
+                      key={player.user_id} 
+                      className={`flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors ${player.is_me ? 'bg-primary/10 border border-primary/30' : ''}`}
+                      style={{
+                        borderBottom: index < globalRanking.length - 1 && !player.is_me ? '1px solid rgba(255, 255, 255, 0.1)' : 'none'
+                      }}
+                    >
+                      <span className="text-xl font-bold w-6" style={{ color: rankingColors[index] || '#a855f7' }}>
+                        {player.position}
+                      </span>
+                      {player.avatar_url ? (
+                        <img 
+                          src={player.avatar_url} 
+                          alt={player.username}
+                          className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: rankingColors[index] || '#a855f7' }}>
+                          <span className="text-white font-bold text-xs">{player.username[0].toUpperCase()}</span>
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-white truncate">
+                          {player.character_name || player.username}
+                          {player.is_me && <span className="text-primary ml-2 text-xs">(você)</span>}
+                        </p>
+                        <p className="text-xs text-gray-400">{player.xp.toLocaleString()} XP • {player.level_title}</p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-4 text-gray-400">
+                    <p className="text-sm">Nenhum jogador no ranking</p>
+                  </div>
+                )}
               </div>
             </div>
 

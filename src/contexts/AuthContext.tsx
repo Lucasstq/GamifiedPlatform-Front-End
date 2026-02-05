@@ -14,6 +14,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   loginWithGoogle: () => void;
   loginWithGithub: () => void;
+  refreshUser: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -23,13 +24,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  // Carregar usuário do localStorage ao montar
-  useEffect(() => {
+  // Função para recarregar usuário do localStorage
+  const refreshUser = () => {
     const storedUser = authService.getCurrentUser();
     if (storedUser && authService.isAuthenticated()) {
       setUser(storedUser);
     }
+  };
+
+  // Carregar usuário do localStorage ao montar
+  useEffect(() => {
+    refreshUser();
     setIsLoading(false);
+  }, []);
+
+  // Escutar mudanças no localStorage (para OAuth2 e outras abas)
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'user' || e.key === 'accessToken') {
+        refreshUser();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   const login = async (data: LoginRequest) => {
@@ -83,6 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     logout,
     loginWithGoogle,
     loginWithGithub,
+    refreshUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

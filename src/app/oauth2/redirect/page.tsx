@@ -3,11 +3,13 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import apiService from '@/services/api.service';
+import { useAuth } from '@/contexts/AuthContext';
 import { Sword } from 'lucide-react';
 
 export default function OAuth2RedirectPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { refreshUser } = useAuth();
   const [status, setStatus] = useState<'processing' | 'success' | 'error'>('processing');
   const [message, setMessage] = useState('Processando autenticação...');
 
@@ -43,6 +45,9 @@ export default function OAuth2RedirectPage() {
               localStorage.setItem('user', JSON.stringify(response.data));
             }
             
+            // Atualizar o contexto de autenticação
+            refreshUser();
+            
             setStatus('success');
             setMessage('Login realizado com sucesso!');
             
@@ -52,6 +57,19 @@ export default function OAuth2RedirectPage() {
           })
           .catch((err) => {
             console.error('Erro ao buscar usuário:', err);
+            // Mesmo com erro ao buscar usuário, os tokens estão salvos
+            // Criar um usuário básico para não quebrar o fluxo
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('user', JSON.stringify({ 
+                id: 0, 
+                username: 'Aventureiro',
+                email: ''
+              }));
+            }
+            
+            // Atualizar o contexto de autenticação
+            refreshUser();
+            
             setStatus('success');
             setMessage('Login realizado! Redirecionando...');
             setTimeout(() => router.push('/dashboard'), 1500);
@@ -66,7 +84,7 @@ export default function OAuth2RedirectPage() {
     };
 
     processOAuth2Callback();
-  }, [searchParams, router]);
+  }, [searchParams, router, refreshUser]);
 
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-particles">
